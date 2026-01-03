@@ -1,0 +1,63 @@
+@page "/produto/{Id:int}"
+@inject ApiService Api
+@inject TokenService TokenSvc
+@inject NavigationManager Nav
+
+@if (prod == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@prod.UrlImagem" class="img-fluid" />
+        </div>
+        <div class="col-md-8">
+            <h3>@prod.Nome</h3>
+            <p>@prod.Detalhe</p>
+            <h4>€ @prod.Preco.ToString("0.00")</h4>
+
+            <button class="btn btn-primary me-2" @onclick="AddCarrinho">
+                Adicionar ao Carrinho
+            </button>
+            <button class="btn btn-outline-danger" @onclick="AddFavorito">
+                Favorito
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private ProdutoDTO? prod;
+
+    protected override async Task OnInitializedAsync() =>
+        prod = await Api.GetProdutoAsync(Id);
+
+    private async Task AddCarrinho()
+    {
+        var userId = await TokenSvc.GetTokenAsync(); // podes extrair claim depois
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        await Api.AddCarrinhoAsync(new CarrinhoDTO
+        {
+            ClienteId = userId,   // melhor extrair sub claim
+            ProdutoId = prod!.Id,
+            Quantidade = 1
+        });
+        Nav.NavigateTo("/carrinho");
+    }
+
+    private async Task AddFavorito()
+    {
+        var userId = await TokenSvc.GetTokenAsync();
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        await Api.AddFavoritoAsync(new FavoritoDTO
+        {
+            ClienteId = userId,
+            ProdutoId = prod!.Id
+        });
+    }
+}

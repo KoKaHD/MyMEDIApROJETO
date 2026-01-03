@@ -1,0 +1,22 @@
+<div class="row mb-2 align-items-center">
+    <div class="col-2">
+        <img src="@Item.ProdutoUrlImagem" class="img-thumbnail" />
+    </div>
+    <div class="col-4">@Item.ProdutoNome</div>
+    <div class="col-2">€ @Item.ProdutoPreco.ToString("0.00")</div>
+    <div class="col-2">
+        <input type="number" min="1" @bind="Item.Quantidade" @bind:event="oninput"
+               class="form-control form-control-sm" />
+    </div>
+    <div class="col-2">
+        <button class="btn btn-sm btn-outline-danger" @onclick="RemoveAsync"></button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CarrinhoDTO Item { get; set; } = default!;
+    [Parameter] public EventCallback<CarrinhoDTO> OnChanged { get; set; }
+    [Parameter] public EventCallback<CarrinhoDTO> OnRemoved { get; set; }
+
+    private async Task RemoveAsync() => await OnRemoved.InvokeAsync(Item);
+}

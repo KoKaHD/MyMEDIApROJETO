@@ -1,0 +1,39 @@
+@inject ApiService Api
+
+@if (destaque == null)
+{
+    <p>Loading destaque...</p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="@destaque.UrlImagem" class="img-fluid rounded-start" />
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">Em Destaque</h5>
+                    <h4>@destaque.Nome</h4>
+                    <p class="card-text">@destaque.Detalhe</p>
+                    <h4>€ @destaque.Preco.ToString("0.00")</h4>
+                    <a href="/produto/@destaque.Id" class="btn btn-primary">Ver Detalhe</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ProdutoDTO? destaque;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var todos = await Api.GetProdutosAsync();
+        if (todos?.Any() == true)
+        {
+            var rnd = new Random();
+            destaque = todos[rnd.Next(todos.Count)];
+        }
+    }
+}

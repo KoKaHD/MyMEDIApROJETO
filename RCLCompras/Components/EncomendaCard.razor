@@ -1,0 +1,22 @@
+<div class="card mb-3">
+    <div class="card-header">
+        Encomenda #@Encomenda.Id – @Encomenda.DataEncomenda.ToString("g")
+        <span class="badge bg-primary float-end">@Encomenda.Estado</span>
+    </div>
+    <div class="card-body">
+        @foreach (var d in Encomenda.Detalhes)
+        {
+            <div class="row">
+                <div class="col-6">@d.ProdutoNome</div>
+                <div class="col-3">Qtd: @d.Quantidade</div>
+                <div class="col-3">€ @d.PrecoUnitario.ToString("0.00")</div>
+            </div>
+        }
+        <hr />
+        <b>Total: € @Encomenda.PrecoTotal.ToString("0.00")</b>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EncomendaDTO Encomenda { get; set; } = default!;
+}

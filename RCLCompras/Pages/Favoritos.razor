@@ -1,0 +1,55 @@
+@page "/favoritos"
+@inject ApiService Api
+@inject TokenService TokenSvc
+@inject NavigationManager Nav
+
+<h3>Favoritos</h3>
+
+@if (favs == null)
+{
+    <p>Loading...</p>
+}
+else if (!favs.Any())
+{
+    <p>Sem favoritos.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var f in favs)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <img src="@f.ProdutoUrlImagem" class="card-img-top" />
+                    <div class="card-body">
+                        <h6>@f.ProdutoNome</h6>
+                        <p class="card-text">€ @f.ProdutoPreco.ToString("0.00")</p>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => Remove(f)">
+                            Remover
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<FavoritoDTO>? favs;
+    private string? userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await TokenSvc.GetTokenAsync();
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        favs = await Api.GetFavoritosAsync(userId);
+    }
+
+    private async Task Remove(FavoritoDTO f)
+    {
+        await Api.RemoveFavoritoAsync(f.Id);
+        favs!.Remove(f);
+    }
+}

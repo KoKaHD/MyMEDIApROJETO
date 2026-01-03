@@ -1,0 +1,43 @@
+<div class="card-produto" @onclick="OnClick">
+    <img src="@Produto.UrlImagem" alt="@Produto.Nome" />
+    <div class="info">
+        <h5>@Produto.Nome</h5>
+        <span class="preco">€ @Produto.Preco.ToString("0.00")</span>
+        @if (Produto.Promocao)
+        {
+            <span class="badge bg-danger">Promoção</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public ProdutoDTO Produto { get; set; } = default!;
+    [Parameter] public EventCallback<ProdutoDTO> OnClick { get; set; }
+}
+
+<style>
+    .card-produto {
+        width: 160px;
+        margin: 0.5rem;
+        cursor: pointer;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+    }
+
+        .card-produto img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+    .info {
+        padding: 0.5rem;
+    }
+
+    .preco {
+        font-weight: bold;
+        color: var(--cor-prim);
+    }
+</style>

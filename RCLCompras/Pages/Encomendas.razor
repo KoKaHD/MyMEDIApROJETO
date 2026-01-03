@@ -1,0 +1,35 @@
+@page "/encomendas"
+@inject ApiService Api
+@inject TokenService TokenSvc
+@inject NavigationManager Nav
+
+<h3>Minhas Encomendas</h3>
+
+@if (encomendas == null)
+{
+    <p>Loading...</p>
+}
+else if (!encomendas.Any())
+{
+    <p>Ainda não efetuou encomendas.</p>
+}
+else
+{
+    @foreach (var e in encomendas)
+    {
+        <EncomendaCard Encomenda="e" />
+    }
+}
+
+@code {
+    private List<EncomendaDTO>? encomendas;
+    private string? userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await TokenSvc.GetTokenAsync();
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        encomendas = await Api.GetEncomendasAsync(userId);
+    }
+}

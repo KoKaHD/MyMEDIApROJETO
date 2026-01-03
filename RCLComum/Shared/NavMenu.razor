@@ -1,0 +1,33 @@
+<div class="nav-menu">
+    <ul class="nav-list">
+        <li><NavLink href="" Match="NavLinkMatch.All"> Início</NavLink></li>
+        <li><NavLink href="produtos"> Produtos</NavLink></li>
+        <li><NavLink href="categorias"> Categorias</NavLink></li>
+        <li><NavLink href="carrinho"> Carrinho</NavLink></li>
+        <li><NavLink href="favoritos"> Favoritos</NavLink></li>
+        <li><NavLink href="encomendas"> Encomendas</NavLink></li>
+    </ul>
+</div>
+
+<style>
+    .nav-menu {
+        background-color: #212529;
+        padding: 0.5rem 0;
+    }
+    .nav-list {
+        list-style: none;
+        display: flex;
+        gap: 1rem;
+        margin: 0;
+        padding: 0 1rem;
+    }
+    .nav-list a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+    }
+    .nav-list a.active {
+        background-color: #0d6efd;
+    }
+</style>

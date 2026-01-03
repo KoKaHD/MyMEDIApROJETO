@@ -1,0 +1,61 @@
+@page "/carrinho"
+@inject ApiService Api
+@inject TokenService TokenSvc
+@inject NavigationManager Nav
+
+<h3>Carrinho</h3>
+
+@if (itens == null)
+{
+    <p>Loading...</p>
+}
+else if (!itens.Any())
+{
+    <p>O carrinho está vazio.</p>
+}
+else
+{
+    @foreach (var item in itens)
+    {
+        <CarrinhoItem Item="item"
+                      OnRemoved="RemoveItem"
+                      OnChanged="UpdateItem" />
+    }
+
+    <hr />
+    <h4>Total: € @Total.ToString("0.00")</h4>
+    <button class="btn btn-success" @onclick="GoCheckout">Finalizar Encomenda</button>
+    <button class="btn btn-secondary" @onclick="ClearCart">Limpar Carrinho</button>
+}
+
+@code {
+    private List<CarrinhoDTO>? itens;
+    private string? userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await TokenSvc.GetTokenAsync(); // melhor extrair claim
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        itens = await Api.GetCarrinhoAsync(userId);
+    }
+
+    private decimal Total => itens?.Sum(i => i.Quantidade * i.ProdutoPreco) ?? 0;
+
+    private async Task RemoveItem(CarrinhoDTO item)
+    {
+        await Api.RemoveCarrinhoAsync(item.Id);
+        itens!.Remove(item);
+    }
+
+    private async Task UpdateItem(CarrinhoDTO item) =>
+        await Api.UpdateCarrinhoAsync(item);
+
+    private async Task ClearCart()
+    {
+        await Api.ClearCarrinhoAsync(userId!);
+        itens!.Clear();
+    }
+
+    private void GoCheckout() => Nav.NavigateTo("/checkout");
+}

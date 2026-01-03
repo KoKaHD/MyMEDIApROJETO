@@ -1,0 +1,76 @@
+@page "/checkout"
+@inject ApiService Api
+@inject TokenService TokenSvc
+@inject NavigationManager Nav
+
+<h3>Finalizar Encomenda</h3>
+
+@if (itens == null)
+{
+    <p>Loading...</p>
+}
+else if (!itens.Any())
+{
+    <p>Carrinho vazio.</p>
+}
+else
+{
+    <h4>Resumo</h4>
+    <table class="table">
+        <thead>
+            <tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var i in itens)
+            {
+                <tr>
+                    <td>@i.ProdutoNome</td>
+                    <td>@i.Quantidade</td>
+                    <td>€ @i.ProdutoPreco.ToString("0.00")</td>
+                    <td>€ @(i.Quantidade* i.ProdutoPreco)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Total: € @Total.ToString("0.00")</h4>
+
+    <button class="btn btn-success" @onclick="Finalizar">Pagar (simulado)</button>
+    <button class="btn btn-secondary" @onclick="Back">Voltar</button>
+}
+
+@code {
+    private List<CarrinhoDTO>? itens;
+    private string? userId;
+    private decimal Total => itens?.Sum(i => i.Quantidade * i.ProdutoPreco) ?? 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await TokenSvc.GetTokenAsync();
+        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+
+        itens = await Api.GetCarrinhoAsync(userId);
+    }
+
+    private async Task Finalizar()
+    {
+        var dto = new EncomendaDTO
+        {
+            ClienteId = userId!,
+            PrecoTotal = Total,
+            Estado = "Pendente",
+            Detalhes = itens!.Select(i => new DetalheEncomendaDTO
+            {
+                ProdutoId = i.ProdutoId,
+                Quantidade = i.Quantidade,
+                PrecoUnitario = i.ProdutoPreco
+            }).ToList()
+        };
+
+        await Api.FinalizarEncomendaAsync(dto);
+        await Api.ClearCarrinhoAsync(userId!);
+        Nav.NavigateTo("/encomendas");
+    }
+
+    private void Back() => Nav.NavigateTo("/carrinho");
+}

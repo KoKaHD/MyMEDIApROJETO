@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<div class="top-bar">
+    <img src="images/logo.png" alt="MyMEDIA" class="logo" />
+    <input type="search" class="search-box" placeholder="Pesquisar produtos..." />
+    <div class="top-buttons">
+        <button class="icon-btn" @onclick="GoCarrinho"></button>
+        <button class="icon-btn" @onclick="GoFavoritos"></button>
+        <button class="icon-btn" @onclick="GoLogin"></button>
+        @* faltam os botoes *@
+    </div>
+</div>
+
+<NavMenu />
+
+<main class="content">
+    @Body
+</main>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private void GoCarrinho() => Nav.NavigateTo("/carrinho");
+    private void GoFavoritos() => Nav.NavigateTo("/favoritos");
+    private void GoLogin() => Nav.NavigateTo("/login");
+}
