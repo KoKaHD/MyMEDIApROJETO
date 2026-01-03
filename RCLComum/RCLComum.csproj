@@ -113,6 +113,10 @@
     <None Include="wwwroot\images\triangulofrutatrasnp.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RCLCompras\RCLCompras.csproj" />
+  </ItemGroup>
+
 
 
 </Project>

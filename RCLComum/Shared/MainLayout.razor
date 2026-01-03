@@ -1,17 +1,25 @@
 @inherits LayoutComponentBase
+@using RCLComum.Shared
+@using RCLComum
 
 <div class="top-bar">
-    <img src="images/logo.png" alt="MyMEDIA" class="logo" />
+    <img src="/images/logo.png" alt="MyMEDIA" class="logo" />
     <input type="search" class="search-box" placeholder="Pesquisar produtos..." />
     <div class="top-buttons">
-        <button class="icon-btn" @onclick="GoCarrinho"></button>
-        <button class="icon-btn" @onclick="GoFavoritos"></button>
-        <button class="icon-btn" @onclick="GoLogin"></button>
-        @* faltam os botoes *@
+        <button class="icon-btn" @onclick="GoCarrinho">
+            <img src="/images/cart.png" alt="Carrinho" />
+        </button>
+        <button class="icon-btn" @onclick="GoFavoritos">
+            <img src="/images/heart.png" alt="Favoritos" />
+        </button>
+        <button class="icon-btn" @onclick="GoLogin">
+            <img src="/images/user.png" alt="Login" />
+        </button>
     </div>
 </div>
 
-<NavMenu />
+<!-- Friso deslizante de categorias – obrigatório §7 -->
+<Categorias OnSelected="GoCategoria" />
 
 <main class="content">
     @Body
@@ -23,4 +31,5 @@
     private void GoCarrinho() => Nav.NavigateTo("/carrinho");
     private void GoFavoritos() => Nav.NavigateTo("/favoritos");
     private void GoLogin() => Nav.NavigateTo("/login");
+    private void GoCategoria(int id) => Nav.NavigateTo($"/categoria/{id}");
 }

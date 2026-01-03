@@ -1,6 +1,6 @@
 @inject ApiService Api
-
-<h4>Categorias</h4>
+@inject NavigationManager Nav
+@page "/categorias"
 
 @if (categorias == null)
 {
@@ -11,7 +11,7 @@ else
     <div class="friso">
         @foreach (var cat in categorias)
         {
-            <div class="friso-item" @onclick="() => Selected(cat)">
+            <div class="friso-item" @onclick="() => OnSelected?.Invoke(cat.Id)">
                 @cat.Nome
             </div>
         }

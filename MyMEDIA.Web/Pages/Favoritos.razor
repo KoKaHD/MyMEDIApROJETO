@@ -1,0 +1,15 @@
+﻿@page "/favoritos"
+
+@* 
+PSEUDOCODE / PLAN:
+1. Problem: Two components share the same component name/tag 'Favoritos' (one in this project and one in the RCL), causing RZ9985.
+2. Goal: Render the RCL's `Favoritos` component from this page without ambiguity and avoid recursive self-reference.
+3. Approach:
+   - Do not rely on an unqualified tag (`<Favoritos />`) because it can resolve to multiple components.
+   - Remove or avoid `@using RCLCompras.Pages` that makes the unqualified name ambiguous (not needed if we use the fully-qualified name).
+   - Use the fully-qualified component type name `RCLCompras.Pages.Favoritos` in the markup to explicitly reference the RCL component.
+   - Keep the `@page` directive so this file remains a routable page.
+4. Outcome: The page will compile and render the RCL component unambiguously.
+*@
+
+<RCLCompras.Pages.Favoritos />
