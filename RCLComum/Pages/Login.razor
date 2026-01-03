@@ -3,7 +3,10 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<h3>Login</h3>
+<div class="text-center mb-4">
+    <img src="/images/logo.png" alt="MyMEDIA" style="height:60px;" />
+    <h3>Login</h3>
+</div>
 
 <EditForm Model="@model" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />

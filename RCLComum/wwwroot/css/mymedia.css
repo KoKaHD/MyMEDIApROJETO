@@ -26,3 +26,26 @@ h1, h2, h3 {
     padding: 1rem;
     margin-bottom: 1rem;
 }
+/* MyMEDIA – imagens */
+:root {
+    --logo: url('/images/logo.png');
+    --ico-cart: url('/images/cart.png');
+    --ico-fav: url('/images/heart.png');
+    --ico-user: url('/images/user.png');
+}
+
+.top-bar {
+    background-image: var(--logo) no-repeat left center / 160px;
+    padding-left: 170px;
+}
+
+.nav-menu {
+    background: var(--logo) no-repeat 1rem center / 120px;
+    padding-left: 140px;
+}
+
+.card-produto img {
+    object-fit: cover;
+    height: 120px;
+    background: url('/images/placeholder.png') center/cover;
+}

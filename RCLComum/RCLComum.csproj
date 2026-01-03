@@ -8,12 +8,109 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\images\about.png" />
+    <Content Remove="wwwroot\images\back.png" />
+    <Content Remove="wwwroot\images\backcaroussel.png" />
+    <Content Remove="wwwroot\images\backicon.png" />
+    <Content Remove="wwwroot\images\cart.png" />
+    <Content Remove="wwwroot\images\cartcheio.png" />
+    <Content Remove="wwwroot\images\deleteicon.png" />
+    <Content Remove="wwwroot\images\detailsicon.png" />
+    <Content Remove="wwwroot\images\editicon.png" />
+    <Content Remove="wwwroot\images\exit.png" />
+    <Content Remove="wwwroot\images\favoriteheart.png" />
+    <Content Remove="wwwroot\images\favoritesicon.jpg" />
+    <Content Remove="wwwroot\images\favoritesicontransp.png" />
+    <Content Remove="wwwroot\images\frutaria.jpg" />
+    <Content Remove="wwwroot\images\headicon.png" />
+    <Content Remove="wwwroot\images\heart.png" />
+    <Content Remove="wwwroot\images\heartfill.png" />
+    <Content Remove="wwwroot\images\icoaguardando.png" />
+    <Content Remove="wwwroot\images\icocancelado.png" />
+    <Content Remove="wwwroot\images\icocatalog.png" />
+    <Content Remove="wwwroot\images\icochecado.png" />
+    <Content Remove="wwwroot\images\icodelete.png" />
+    <Content Remove="wwwroot\images\icoedit.png" />
+    <Content Remove="wwwroot\images\icoementrega.png" />
+    <Content Remove="wwwroot\images\icoentrega.png" />
+    <Content Remove="wwwroot\images\iconovo.png" />
+    <Content Remove="wwwroot\images\icoperfil.png" />
+    <Content Remove="wwwroot\images\icosair.png" />
+    <Content Remove="wwwroot\images\infoicon.png" />
+    <Content Remove="wwwroot\images\infoicontransp50x50.png" />
+    <Content Remove="wwwroot\images\location.png" />
+    <Content Remove="wwwroot\images\minus.png" />
+    <Content Remove="wwwroot\images\next.png" />
+    <Content Remove="wwwroot\images\nextcaroussel.png" />
+    <Content Remove="wwwroot\images\noproductstrans.png" />
+    <Content Remove="wwwroot\images\novo.png" />
+    <Content Remove="wwwroot\images\pesquisaricon50x50.png" />
+    <Content Remove="wwwroot\images\plus.png" />
+    <Content Remove="wwwroot\images\pngegg.png" />
+    <Content Remove="wwwroot\images\questionsanswers.jpg" />
+    <Content Remove="wwwroot\images\register.png" />
+    <Content Remove="wwwroot\images\saveicon.png" />
+    <Content Remove="wwwroot\images\searchredicon50x50.png" />
+    <Content Remove="wwwroot\images\Selecticontransp120x50.png" />
+    <Content Remove="wwwroot\images\triangulofrutaazul.png" />
+    <Content Remove="wwwroot\images\triangulofrutatrasnp.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Pages\" />
-    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\about.png" />
+    <None Include="wwwroot\images\back.png" />
+    <None Include="wwwroot\images\backcaroussel.png" />
+    <None Include="wwwroot\images\backicon.png" />
+    <None Include="wwwroot\images\cart.png" />
+    <None Include="wwwroot\images\cartcheio.png" />
+    <None Include="wwwroot\images\deleteicon.png" />
+    <None Include="wwwroot\images\detailsicon.png" />
+    <None Include="wwwroot\images\editicon.png" />
+    <None Include="wwwroot\images\exit.png" />
+    <None Include="wwwroot\images\favoriteheart.png" />
+    <None Include="wwwroot\images\favoritesicon.jpg" />
+    <None Include="wwwroot\images\favoritesicontransp.png" />
+    <None Include="wwwroot\images\frutaria.jpg" />
+    <None Include="wwwroot\images\headicon.png" />
+    <None Include="wwwroot\images\heart.png" />
+    <None Include="wwwroot\images\heartfill.png" />
+    <None Include="wwwroot\images\icoaguardando.png" />
+    <None Include="wwwroot\images\icocancelado.png" />
+    <None Include="wwwroot\images\icocatalog.png" />
+    <None Include="wwwroot\images\icochecado.png" />
+    <None Include="wwwroot\images\icodelete.png" />
+    <None Include="wwwroot\images\icoedit.png" />
+    <None Include="wwwroot\images\icoementrega.png" />
+    <None Include="wwwroot\images\icoentrega.png" />
+    <None Include="wwwroot\images\iconovo.png" />
+    <None Include="wwwroot\images\icoperfil.png" />
+    <None Include="wwwroot\images\icosair.png" />
+    <None Include="wwwroot\images\infoicon.png" />
+    <None Include="wwwroot\images\infoicontransp50x50.png" />
+    <None Include="wwwroot\images\location.png" />
+    <None Include="wwwroot\images\minus.png" />
+    <None Include="wwwroot\images\next.png" />
+    <None Include="wwwroot\images\nextcaroussel.png" />
+    <None Include="wwwroot\images\noproductstrans.png" />
+    <None Include="wwwroot\images\novo.png" />
+    <None Include="wwwroot\images\pesquisaricon50x50.png" />
+    <None Include="wwwroot\images\plus.png" />
+    <None Include="wwwroot\images\pngegg.png" />
+    <None Include="wwwroot\images\questionsanswers.jpg" />
+    <None Include="wwwroot\images\register.png" />
+    <None Include="wwwroot\images\saveicon.png" />
+    <None Include="wwwroot\images\searchredicon50x50.png" />
+    <None Include="wwwroot\images\Selecticontransp120x50.png" />
+    <None Include="wwwroot\images\triangulofrutaazul.png" />
+    <None Include="wwwroot\images\triangulofrutatrasnp.png" />
   </ItemGroup>
 
 
