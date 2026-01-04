@@ -1,15 +1,25 @@
-<div class="row mb-2 align-items-center">
-    <div class="col-2">
-        <img src="@Item.ProdutoUrlImagem" class="img-thumbnail" />
+<div class="cart-item">
+    <img class="cart-item-img" src="@Item.ProdutoUrlImagem" alt="@Item.ProdutoNome" />
+
+    <div class="cart-item-info">
+        <div class="cart-item-title">@Item.ProdutoNome</div>
+        <div class="cart-item-price">€ @Item.ProdutoPreco.ToString("0.00")</div>
     </div>
-    <div class="col-4">@Item.ProdutoNome</div>
-    <div class="col-2">€ @Item.ProdutoPreco.ToString("0.00")</div>
-    <div class="col-2">
-        <input type="number" min="1" @bind="Item.Quantidade" @bind:event="oninput"
+
+    <div class="cart-item-qty">
+        <input type="number" min="1" value="@Item.Quantidade"
+               @oninput="OnQtyInput"
                class="form-control form-control-sm" />
     </div>
-    <div class="col-2">
-        <button class="btn btn-sm btn-outline-danger" @onclick="RemoveAsync"></button>
+
+    <div class="cart-item-subtotal">
+        € @(Item.Quantidade* Item.ProdutoPreco).ToString("0.00")
+    </div>
+
+    <div class="cart-item-actions">
+        <button class="btn btn-sm btn-outline-danger" @onclick="RemoveAsync" title="Remover">
+            Remover
+        </button>
     </div>
 </div>
 
@@ -18,5 +28,14 @@
     [Parameter] public EventCallback<CarrinhoDTO> OnChanged { get; set; }
     [Parameter] public EventCallback<CarrinhoDTO> OnRemoved { get; set; }
 
-    private async Task RemoveAsync() => await OnRemoved.InvokeAsync(Item);
+    private async Task OnQtyInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var qty))
+        {
+            Item.Quantidade = Math.Max(1, qty);
+            await OnChanged.InvokeAsync(Item);
+        }
+    }
+
+    private Task RemoveAsync() => OnRemoved.InvokeAsync(Item);
 }

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.JSInterop;
+using System.Net.Http.Headers;
 
 namespace RCLAPI.Services
 {
@@ -15,10 +12,28 @@ namespace RCLAPI.Services
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var token = await _tokenService.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
-                request.Headers.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            string? token = null;
+
+            try
+            {
+                token = await _tokenService.GetTokenAsync();
+            }
+            catch (InvalidOperationException)
+            {
+                // SSR prerender: não há JS/localStorage ainda
+                token = null;
+            }
+            catch (JSDisconnectedException)
+            {
+                // circuito caiu/desligado
+                token = null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
             return await base.SendAsync(request, cancellationToken);
         }
     }

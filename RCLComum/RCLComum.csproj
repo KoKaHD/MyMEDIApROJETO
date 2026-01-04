@@ -61,10 +61,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\images\about.png" />
     <None Include="wwwroot\images\back.png" />
     <None Include="wwwroot\images\backcaroussel.png" />
@@ -115,6 +111,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RCLCompras\RCLCompras.csproj" />
+    
   </ItemGroup>
 
 

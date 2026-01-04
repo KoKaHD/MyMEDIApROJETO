@@ -1,114 +1,64 @@
-@using RCLComum.Shared
-@using RCLComum
+@inject NavigationManager Nav
 
-<div class="top-bar">
-    <img src="/images/logo.png" alt="MyMEDIA" class="logo" />
+<header class="top-bar">
+    <button class="brand" @onclick="GoHome" title="Início">
+        <img src="@LogoUrl" alt="MyMEDIA" class="logo" />
+    </button>
+
     <input type="search" class="search-box" placeholder="Pesquisar produtos..." />
+
     <div class="top-buttons">
-        <button class="icon-btn" @onclick="GoCarrinho"><img src="/images/cart.png" alt="Carrinho" /></button>
-        <button class="icon-btn" @onclick="GoFavoritos"><img src="/images/heart.png" alt="Favoritos" /></button>
-        <button class="icon-btn" @onclick="GoLogin"><img src="/images/user.png" alt="Login" /></button>
+        <button class="icon-btn" @onclick="GoCarrinho" title="Carrinho">
+            <img src="@CartUrl" alt="Carrinho" />
+        </button>
+        <button class="icon-btn" @onclick="GoFavoritos" title="Favoritos">
+            <img src="@FavUrl" alt="Favoritos" />
+        </button>
+        <button class="icon-btn" @onclick="GoEncomendas" title="Encomendas">
+            <img src="@UserUrl" alt="Encomendas" />
+        </button>
+        <button class="icon-btn" @onclick="GoProdutos" title="Produtos">
+            <img src="@UserUrl" alt="Produtos" />
+        </button>
+        <button class="icon-btn" @onclick="GoRegisto" title="Criar Conta">
+            <img src="@UserUrl" alt="Criar Conta" />
+        </button>
+        <button class="icon-btn" @onclick="GoLogin" title="Login">
+            <img src="@UserUrl" alt="Login" />
+        </button>
     </div>
-</div>
+</header>
 
-<!-- Friso deslizante de categorias – obrigatório §7 -->
-<Categorias OnSelected="GoCategoria" />
-
-<div class="nav-menu">
+<nav class="nav-menu">
     <ul class="nav-list">
-        <li><NavLink href="" Match="NavLinkMatch.All"> Início</NavLink></li>
-        <li><NavLink href="produtos"> Produtos</NavLink></li>
-        <li><NavLink href="categorias"> Categorias</NavLink></li>
-        <li><NavLink href="carrinho"> Carrinho</NavLink></li>
-        <li><NavLink href="favoritos"> Favoritos</NavLink></li>
-        <li><NavLink href="encomendas"> Encomendas</NavLink></li>
+        <li><NavLink href="" Match="NavLinkMatch.All">Início</NavLink></li>
+        <li><NavLink href="produtos">Produtos</NavLink></li>
+        <li><NavLink href="categorias">Categorias</NavLink></li>
+        <li><NavLink href="carrinho">Carrinho</NavLink></li>
+        <li><NavLink href="favoritos">Favoritos</NavLink></li>
+        <li><NavLink href="encomendas">Encomendas</NavLink></li>
+        <li><NavLink href="registo">Registo</NavLink></li>
     </ul>
-</div>
+</nav>
 
 @code {
-    [Inject] private NavigationManager Nav { get; set; } = default!;
+    // IMPORTANTE: imagens que estão em RCLComum/wwwroot devem ser acedidas assim:
+    private const string BaseContent = "_content/RCLComum/images";
 
+    private string LogoUrl => $"{BaseContent}/logo.png";
+    private string CartUrl => $"{BaseContent}/cart.png";
+    private string FavUrl => $"{BaseContent}/heart.png";
+    private string UserUrl => $"{BaseContent}/user.png";
+    private string ProdUrl => $"{BaseContent}/user.png";
+    private string EncUrl => $"{BaseContent}/user.png";
+    private string RegUrl => $"{BaseContent}/register.png";
+
+    private void GoHome() => Nav.NavigateTo("/");
     private void GoCarrinho() => Nav.NavigateTo("/carrinho");
     private void GoFavoritos() => Nav.NavigateTo("/favoritos");
     private void GoLogin() => Nav.NavigateTo("/login");
-    private void GoCategoria(int id) => Nav.NavigateTo($"/categoria/{id}");
+    private void GoProdutos() => Nav.NavigateTo("/produtos");
+    private void GoEncomendas() => Nav.NavigateTo("/encomendas");
+    private void GoRegisto() => Nav.NavigateTo("/registo");
+    
 }
-
-<style>
-    /* Top-bar igual ao esquema geral */
-    .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #0d6efd;
-        color: white;
-        padding: 0.5rem 1rem;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-    }
-    .logo {
-        height: 40px;
-    }
-    .search-box {
-        flex: 1;
-        max-width: 400px;
-        margin: 0 1rem;
-        padding: 0.4rem 0.8rem;
-        border: none;
-        border-radius: 20px;
-    }
-    .top-buttons {
-        display: flex;
-        gap: 0.5rem;
-    }
-    .icon-btn {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
-    .icon-btn img {
-        height: 24px;
-    }
-
-    /* Friso deslizante – igual ao exemplo das fichas */
-    .friso {
-        display: flex;
-        gap: 0.5rem;
-        overflow-x: auto;
-        padding: 0.5rem 1rem;
-        background: #212529;
-    }
-    .friso-item {
-        background: #0d6efd;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        white-space: nowrap;
-        cursor: pointer;
-    }
-
-    /* Nav-menu igual ao esquema geral */
-    .nav-menu {
-        background: #212529;
-        padding: 0.5rem 0;
-    }
-    .nav-list {
-        list-style: none;
-        display: flex;
-        gap: 1rem;
-        margin: 0;
-        padding: 0 1rem;
-    }
-    .nav-list a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 0.75rem;
-        border-radius: 4px;
-    }
-    .nav-list a.active {
-        background: #0d6efd;
-    }
-</style>

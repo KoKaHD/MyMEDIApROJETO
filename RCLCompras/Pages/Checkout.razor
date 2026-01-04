@@ -4,14 +4,13 @@
 @inject TokenService TokenSvc
 @inject NavigationManager Nav
 
-<div class="text-center">
-    <img src="/images/checkout.png" alt="Checkout" style="height:80px;" />
-    <h4>Finalizar Encomenda</h4>
-</div>
+<header class="page-head">
+    <h3 class="page-title">Finalizar Encomenda</h3>
+</header>
 
 @if (itens == null)
 {
-    <p>Loading...</p>
+    <p>A carregar...</p>
 }
 else if (!itens.Any())
 {
@@ -19,61 +18,100 @@ else if (!itens.Any())
 }
 else
 {
-    <h4>Resumo</h4>
-    <table class="table">
-        <thead>
-            <tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var i in itens)
-            {
-                <tr>
-                    <td>@i.ProdutoNome</td>
-                    <td>@i.Quantidade</td>
-                    <td>€ @i.ProdutoPreco.ToString("0.00")</td>
-                    <td>€ @(i.Quantidade* i.ProdutoPreco)</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="checkout-layout">
+        <section class="checkout-resumo">
+            <div class="summary-card">
+                <h5>Resumo</h5>
 
-    <h4>Total: € @Total.ToString("0.00")</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-end">Qtd</th>
+                                <th class="text-end">Preço</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in itens)
+                            {
+                                <tr>
+                                    <td>@i.ProdutoNome</td>
+                                    <td class="text-end">@i.Quantidade</td>
+                                    <td class="text-end">€ @i.ProdutoPreco.ToString("0.00")</td>
+                                    <td class="text-end">€ @(i.Quantidade* i.ProdutoPreco).ToString("0.00")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
-    <button class="btn btn-success" @onclick="Finalizar">Pagar (simulado)</button>
-    <button class="btn btn-secondary" @onclick="Back">Voltar</button>
+                <div class="summary-line">
+                    <span>Total</span>
+                    <strong>€ @Total.ToString("0.00")</strong>
+                </div>
+
+                <button class="btn btn-success w-100" @onclick="Finalizar" disabled="@isBusy">
+                    @(isBusy ? "A processar..." : "Pagar (simulado)")
+                </button>
+
+                <button class="btn btn-outline-secondary w-100 mt-2" @onclick="Back" disabled="@isBusy">
+                    Voltar
+                </button>
+            </div>
+        </section>
+    </div>
 }
 
 @code {
     private List<CarrinhoDTO>? itens;
     private string? userId;
+    private bool isBusy;
+
     private decimal Total => itens?.Sum(i => i.Quantidade * i.ProdutoPreco) ?? 0;
 
     protected override async Task OnInitializedAsync()
     {
-        userId = await TokenSvc.GetTokenAsync();
-        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+        userId = await TokenSvc.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
 
         itens = await Api.GetCarrinhoAsync(userId);
     }
 
     private async Task Finalizar()
     {
-        var dto = new EncomendaDTO
-        {
-            ClienteId = userId!,
-            PrecoTotal = Total,
-            Estado = "Pendente",
-            Detalhes = itens!.Select(i => new DetalheEncomendaDTO
-            {
-                ProdutoId = i.ProdutoId,
-                Quantidade = i.Quantidade,
-                PrecoUnitario = i.ProdutoPreco
-            }).ToList()
-        };
+        if (itens is null || itens.Count == 0) return;
 
-        await Api.FinalizarEncomendaAsync(dto);
-        await Api.ClearCarrinhoAsync(userId!);
-        Nav.NavigateTo("/encomendas");
+        isBusy = true;
+        try
+        {
+            var dto = new EncomendaDTO
+            {
+                ClienteId = userId!,
+                PrecoTotal = Total,
+                Estado = "Pendente",
+                Detalhes = itens.Select(i => new DetalheEncomendaDTO
+                {
+                    ProdutoId = i.ProdutoId,
+                    Quantidade = i.Quantidade,
+                    PrecoUnitario = i.ProdutoPreco
+                }).ToList()
+            };
+
+            await Api.FinalizarEncomendaAsync(dto);
+            await Api.ClearCarrinhoAsync(userId!);
+
+            Nav.NavigateTo("/encomendas");
+        }
+        finally
+        {
+            isBusy = false;
+        }
     }
 
     private void Back() => Nav.NavigateTo("/carrinho");

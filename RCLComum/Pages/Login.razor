@@ -1,7 +1,10 @@
 @page "/login"
-@inject HttpClient Http
+
+@using RCLAPI.DTOs
+@using RCLAPI.Services
+@inject ApiService Api
+@inject TokenService TokenService
 @inject NavigationManager Nav
-@inject IJSRuntime JS
 
 <div class="text-center mb-4">
     <img src="/images/logo.png" alt="MyMEDIA" style="height:60px;" />
@@ -10,38 +13,98 @@
 
 <EditForm Model="@model" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
+    <ValidationSummary />
+
     <div class="mb-3">
-        <label>Email</label>
+        <label class="form-label">Email</label>
         <InputText @bind-Value="model.Email" class="form-control" />
     </div>
+
     <div class="mb-3">
-        <label>Password</label>
+        <label class="form-label">Password</label>
         <InputText type="password" @bind-Value="model.Password" class="form-control" />
     </div>
-    <button type="submit" class="btn btn-primary">Entrar</button>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    <button type="submit" class="btn btn-primary" disabled="@isBusy">
+        @(isBusy ? "A entrar..." : "Entrar")
+    </button>
 </EditForm>
 
 @code {
     private LoginDTO model = new();
+    private string? error;
+    private bool isBusy;
 
     private async Task HandleLogin()
     {
-        var rsp = await Http.PostAsJsonAsync("api/identity/login", model);
-        if (rsp.IsSuccessStatusCode)
+        error = null;
+        isBusy = true;
+
+        try
         {
-            var token = await rsp.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("localStorage.setItem", "token", token);
+            var rsp = await Api.LoginAsync(model);
+
+            var body = await rsp.Content.ReadAsStringAsync();
+            if (!rsp.IsSuccessStatusCode)
+            {
+                var msg = await rsp.Content.ReadAsStringAsync();
+                error = string.IsNullOrWhiteSpace(msg)
+                    ? "Login inválido."
+                    : msg;
+                return;
+            }
+            if (!rsp.IsSuccessStatusCode)
+            {
+                var msg = await rsp.Content.ReadAsStringAsync();
+                error = string.IsNullOrWhiteSpace(msg) ? "Não foi possível efetuar login." : msg;
+                return;
+            }
+            if (!rsp.IsSuccessStatusCode)
+            {
+                error = $"Login inválido. HTTP {(int)rsp.StatusCode}. Body: {body}";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                error = "A API respondeu 200 mas o body veio vazio (não veio JSON).";
+                return;
+            }
+
+            AuthResponseDto? auth = null;
+            try
+            {
+                auth = System.Text.Json.JsonSerializer.Deserialize<AuthResponseDto>(
+                    body,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch (Exception ex)
+            {
+                error = $"Body não é JSON válido. Body: {body}. Erro: {ex.Message}";
+                return;
+            }
+
+            if (auth is null || string.IsNullOrWhiteSpace(auth.Token))
+            {
+                error = $"JSON recebido mas sem token. Body: {body}";
+                return;
+            }
+
+            await TokenService.SetTokenAsync(auth.Token);
             Nav.NavigateTo("/");
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Login inválido");
+            error = ex.ToString();
         }
-    }
-
-    public class LoginDTO
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        finally
+        {
+            isBusy = false;
+        }
     }
 }

@@ -1,0 +1,54 @@
+@page "/"
+
+
+@inject RCLAPI.Services.ApiService Api
+@inject NavigationManager Nav
+
+<Destaques />
+
+<CategoriasFriso OnSelected="GoCategoria" />
+
+<section class="home-section">
+    <div class="home-section-head">
+        <h3>Novidades</h3>
+        <button class="btn btn-link" @onclick="GoProdutos">Ver todos</button>
+    </div>
+
+    @if (novidades == null)
+    {
+        <p>A carregar produtos...</p>
+    }
+    else if (novidades.Count == 0)
+    {
+        <p>Sem produtos.</p>
+    }
+    else
+    {
+        <div class="grid-produtos">
+            @foreach (var p in novidades)
+            {
+                <ProdutoCard Produto="p" OnClick="GoDetalhe" />
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private List<RCLAPI.DTOs.ProdutoDTO>? novidades;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var todos = await Api.GetProdutosAsync();
+        // mostra só alguns para a home (ex.: 8)
+        novidades = todos?.Take(8).ToList() ?? new();
+    }
+
+    private Task GoDetalhe(RCLAPI.DTOs.ProdutoDTO p)
+    {
+        Nav.NavigateTo($"/produto/{p.Id}");
+        return Task.CompletedTask;
+    }
+
+    private void GoCategoria(int id) => Nav.NavigateTo($"/categoria/{id}");
+    private void GoProdutos() => Nav.NavigateTo("/produtos");
+}

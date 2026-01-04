@@ -1,9 +1,0 @@
-﻿@page "/"
-
-<Destaques />
-<Categorias OnSelected="GoCategoria" />
-
-@code {
-    [Inject] private NavigationManager Nav { get; set; } = default!;
-    private void GoCategoria(int id) => Nav.NavigateTo($"/categoria/{id}");
-}

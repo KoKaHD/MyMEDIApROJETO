@@ -10,15 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// HttpClient para API
+/*// HttpClient para API
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!)
-});
+});*/
 
 // Serviços RCL
 builder.Services.AddRCLApiServices(builder.Configuration["ApiBaseUrl"]!);
-builder.Services.AddScoped<TokenService>();
+/*builder.Services.AddScoped<TokenService>();*/
 
 var app = builder.Build();
 

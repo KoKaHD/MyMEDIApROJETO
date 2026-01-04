@@ -4,29 +4,53 @@
 @inject TokenService TokenSvc
 @inject NavigationManager Nav
 
-<h3>Carrinho</h3>
+<header class="page-head">
+    <h3 class="page-title">Carrinho</h3>
+</header>
 
 @if (itens == null)
 {
-    <p>Loading...</p>
+    <p>A carregar...</p>
 }
 else if (!itens.Any())
 {
-    <p>O carrinho está vazio.</p>
+    <div class="empty-state">
+        <h5>O carrinho está vazio.</h5>
+        <button class="btn btn-primary" @onclick="() => Nav.NavigateTo(" /produtos")">
+            Ver produtos
+        </button>
+    </div>
 }
 else
 {
-    @foreach (var item in itens)
-    {
-        <CarrinhoItem Item="item"
-                      OnRemoved="RemoveItem"
-                      OnChanged="UpdateItem" />
-    }
+    <div class="cart-layout">
+        <section class="cart-items">
+            @foreach (var item in itens)
+            {
+                <CarrinhoItem Item="item"
+                              OnRemoved="RemoveItem"
+                              OnChanged="UpdateItem" />
+            }
+        </section>
 
-    <hr />
-    <h4>Total: € @Total.ToString("0.00")</h4>
-    <button class="btn btn-success" @onclick="GoCheckout">Finalizar Encomenda</button>
-    <button class="btn btn-secondary" @onclick="ClearCart">Limpar Carrinho</button>
+        <aside class="cart-summary">
+            <div class="summary-card">
+                <h5>Resumo</h5>
+                <div class="summary-line">
+                    <span>Total</span>
+                    <strong>€ @Total.ToString("0.00")</strong>
+                </div>
+
+                <button class="btn btn-success w-100" @onclick="GoCheckout">
+                    Finalizar Encomenda
+                </button>
+
+                <button class="btn btn-outline-secondary w-100 mt-2" @onclick="ClearCart">
+                    Limpar Carrinho
+                </button>
+            </div>
+        </aside>
+    </div>
 }
 
 @code {
@@ -35,8 +59,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        userId = await TokenSvc.GetTokenAsync(); // melhor extrair claim
-        if (string.IsNullOrEmpty(userId)) { Nav.NavigateTo("/login"); return; }
+        userId = await TokenSvc.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
 
         itens = await Api.GetCarrinhoAsync(userId);
     }
@@ -47,10 +75,17 @@ else
     {
         await Api.RemoveCarrinhoAsync(item.Id);
         itens!.Remove(item);
+        StateHasChanged();
     }
 
-    private async Task UpdateItem(CarrinhoDTO item) =>
+    private async Task UpdateItem(CarrinhoDTO item)
+    {
+        // garante mínimo 1
+        if (item.Quantidade < 1) item.Quantidade = 1;
+
         await Api.UpdateCarrinhoAsync(item);
+        StateHasChanged();
+    }
 
     private async Task ClearCart()
     {

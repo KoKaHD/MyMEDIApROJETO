@@ -1,16 +1,12 @@
-﻿using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.JSInterop;
 
 namespace RCLAPI.Services
 {
     public class TokenService
     {
         private readonly IJSRuntime _js;
-
         public TokenService(IJSRuntime js) => _js = js;
 
         public async Task<string?> GetTokenAsync() =>
@@ -21,5 +17,17 @@ namespace RCLAPI.Services
 
         public async Task RemoveTokenAsync() =>
             await _js.InvokeVoidAsync("localStorage.removeItem", "token");
+
+        public async Task<string?> GetUserIdAsync()
+        {
+            var token = await GetTokenAsync();
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+            return jwt.Claims.FirstOrDefault(c =>
+                       c.Type == ClaimTypes.NameIdentifier || c.Type == "sub")
+                      ?.Value;
+        }
     }
 }

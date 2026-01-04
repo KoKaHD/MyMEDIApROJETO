@@ -8,5 +8,6 @@ namespace RESTfulAPI.Data
         public string Apelido { get; set; } = string.Empty;
         public DateTime? DataNascimento { get; set; }
         public int? NIF { get; set; }
+        public string Estado { get; set; } = "Pendente";
     }
 }

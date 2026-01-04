@@ -21,7 +21,12 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-
+var jwtKey = builder.Configuration["JWT:Key"]
+    ?? throw new InvalidOperationException("JWT:Key em falta no appsettings.json");
+var jwtIssuer = builder.Configuration["JWT:Issuer"]
+    ?? throw new InvalidOperationException("JWT:Issuer em falta no appsettings.json");
+var jwtAudience = builder.Configuration["JWT:Audience"]
+    ?? throw new InvalidOperationException("JWT:Audience em falta no appsettings.json");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -31,15 +36,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidAudience = builder.Configuration["JWT:Audience"],
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
-
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "PWeb 2025 API TP - Jorge Barbosa", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My Media", Version = "v1" });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -81,8 +85,8 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Cliente"));
 });
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-       .AddEntityFrameworkStores<ApplicationDbContext>();
+/*builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+       .AddEntityFrameworkStores<ApplicationDbContext>();*/
 
 // Add os services
 builder.Services.AddControllers();
@@ -97,7 +101,7 @@ builder.Services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
 builder.Services.AddScoped<IFavoritoRepository, FavoritoRepository>();
 builder.Services.AddScoped<IEncomendaRepository, EncomendaRepository>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+/*builder.Services.AddSwaggerGen();*/
 
 var app = builder.Build();
 
@@ -120,6 +124,8 @@ app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+/*app.MapGroup("/api/identity").MapIdentityApi<ApplicationUser>();*/
 app.MapControllers();
+
 
 app.Run();

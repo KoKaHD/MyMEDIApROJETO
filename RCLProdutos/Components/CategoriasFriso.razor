@@ -1,0 +1,35 @@
+@inject ApiService Api
+
+@if (categorias == null)
+{
+    <p>A carregar categorias...</p>
+}
+else
+{
+    <div class="friso">
+        @foreach (var cat in categorias)
+        {
+            var selected = (SelectedId != 0 && cat.Id == SelectedId);
+
+            <button class="friso-item @(selected ? "selected" : "")"
+                    @onclick="() => Selecionar(cat.Id)">
+                @cat.Nome
+            </button>
+        }
+    </div>
+}
+
+@code {
+    private List<CategoriaDTO>? categorias;
+
+    [Parameter] public int SelectedId { get; set; }
+
+    [Parameter] public EventCallback<int> OnSelected { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = await Api.GetCategoriasAsync();
+    }
+
+    private Task Selecionar(int id) => OnSelected.InvokeAsync(id);
+}

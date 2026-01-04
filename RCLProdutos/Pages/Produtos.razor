@@ -1,19 +1,26 @@
 @page "/produtos"
 @page "/categoria/{Id:int}"
+
 @inject ApiService Api
-@using RCLComum.Shared
+@inject NavigationManager Nav
 
-<NavMenu />
+<header class="page-head">
+    <h3 class="page-title">@((Id is null) ? "Produtos" : "Produtos por Categoria")</h3>
+</header>
 
-<Categorias OnSelected="GoCategoria" />
+<CategoriasFriso SelectedId="@(Id ?? 0)" OnSelected="GoCategoria" />
 
 @if (produtos == null)
 {
-    <p>Loading...</p>
+    <p>A carregar produtos...</p>
+}
+else if (produtos.Count == 0)
+{
+    <p>Sem produtos para mostrar.</p>
 }
 else
 {
-    <div class="grade">
+    <div class="grid-produtos">
         @foreach (var p in produtos)
         {
             <ProdutoCard Produto="p" OnClick="GoDetalhe" />
@@ -23,19 +30,24 @@ else
 
 @code {
     [Parameter] public int? Id { get; set; }
-
     private List<ProdutoDTO>? produtos;
 
-    protected override async Task OnParametersSetAsync() =>
+    protected override async Task OnParametersSetAsync()
+    {
         produtos = Id == null
             ? await Api.GetProdutosAsync()
             : await Api.GetProdutosPorCategoriaAsync(Id.Value);
+    }
 
-    private void GoDetalhe(ProdutoDTO p) =>
+    private Task GoDetalhe(ProdutoDTO p)
+    {
         Nav.NavigateTo($"/produto/{p.Id}");
+        return Task.CompletedTask;
+    }
 
-    private void GoCategoria(int catId) =>
+    private Task GoCategoria(int catId)
+    {
         Nav.NavigateTo($"/categoria/{catId}");
-
-    [Inject] private NavigationManager Nav { get; set; } = default!;
+        return Task.CompletedTask;
+    }
 }

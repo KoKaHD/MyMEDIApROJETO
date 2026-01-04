@@ -12,11 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\" />
-    <Folder Include="Pages\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\RCLAPI\RCLAPI.csproj" />
     <ProjectReference Include="..\RCLComum\RCLComum.csproj" />
   </ItemGroup>

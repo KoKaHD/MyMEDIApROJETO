@@ -1,0 +1,65 @@
+@page "/access-denied"
+@inject NavigationManager Nav
+
+<div class="mymedia-center">
+    <div class="mymedia-card">
+        <h1 class="mymedia-title">Acesso Negado</h1>
+
+        <p class="mymedia-text">
+            Não tens permissões para aceder a esta página.
+        </p>
+
+        <div class="mymedia-actions">
+            <button class="btn btn-primary" @onclick="GoHome">
+                Voltar ao início
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="GoLogin">
+                Login
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoHome() => Nav.NavigateTo("/");
+    private void GoLogin() => Nav.NavigateTo("/login");
+}
+
+<style>
+    .mymedia-center {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .mymedia-card {
+        width: 100%;
+        max-width: 520px;
+        border: 1px solid rgba(0,0,0,.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+    .mymedia-title {
+        margin: 0 0 0.75rem 0;
+        font-size: 1.6rem;
+    }
+
+    .mymedia-text {
+        margin: 0 0 1.25rem 0;
+        color: #555;
+        line-height: 1.4;
+    }
+
+    .mymedia-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+</style>

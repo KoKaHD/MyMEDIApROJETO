@@ -1,10 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RCLAPI.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RCLAPI.Extensions
 {
@@ -13,18 +8,22 @@ namespace RCLAPI.Extensions
         public static IServiceCollection AddRCLApiServices(this IServiceCollection services, string apiBaseUrl)
         {
             services.AddScoped<TokenService>();
-            services.AddScoped<ApiService>();
+            services.AddScoped<AuthHandler>();
 
-            services.AddHttpClient("Api", client =>
+            // Client público (sem JWT)
+            services.AddHttpClient("PublicApi", client =>
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            });
+
+            // Client autenticado (com JWT)
+            services.AddHttpClient("AuthApi", client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
             })
             .AddHttpMessageHandler<AuthHandler>();
 
-            services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-                                       .CreateClient("Api"));
-
-            services.AddScoped<AuthHandler>();
+            services.AddScoped<ApiService>();
 
             return services;
         }
