@@ -380,3 +380,27 @@ h1, h2, h3 {
     .home-section-head h3 {
         margin: 0;
     }
+.search-wrapper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0 8px;
+    background: white;
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.search-box {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1rem;
+    flex: 1;
+    min-width: 0; /* evita overflow em ecrãs pequenos */
+}

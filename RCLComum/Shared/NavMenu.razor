@@ -1,35 +1,48 @@
 @inject NavigationManager Nav
+@inject RCLAPI.Services.TokenService TokenSvc
 
 <header class="top-bar">
     <button class="brand" @onclick="GoHome" title="Início">
         <img src="@LogoUrl" alt="MyMEDIA" class="logo" />
     </button>
-
-    <input type="search" class="search-box" placeholder="Pesquisar produtos..." />
-
+    <div class="search-wrapper">
+        <img src="@PesqUrl" alt="" class="search-icon" />
+        <input type="search" class="search-box" placeholder="Pesquisar produtos..." />
+    </div>
+    
     <div class="top-buttons">
         <button class="icon-btn" @onclick="GoCarrinho" title="Carrinho">
             <img src="@CartUrl" alt="Carrinho" />
         </button>
+
         <button class="icon-btn" @onclick="GoFavoritos" title="Favoritos">
             <img src="@FavUrl" alt="Favoritos" />
         </button>
+
         <button class="icon-btn" @onclick="GoEncomendas" title="Encomendas">
-            <img src="@UserUrl" alt="Encomendas" />
+            <img src="@EncUrl" alt="Encomendas" />
         </button>
-        <button class="icon-btn" @onclick="GoProdutos" title="Produtos">
-            <img src="@UserUrl" alt="Produtos" />
-        </button>
-        <button class="icon-btn" @onclick="GoRegisto" title="Criar Conta">
-            <img src="@UserUrl" alt="Criar Conta" />
-        </button>
-        <button class="icon-btn" @onclick="GoLogin" title="Login">
-            <img src="@UserUrl" alt="Login" />
-        </button>
+
+        @if (!isLoggedIn)
+        {
+            <button class="icon-btn" @onclick="GoRegisto" title="Criar Conta">
+                <img src="@RegUrl" alt="Criar Conta" />
+            </button>
+
+            <button class="icon-btn" @onclick="GoLogin" title="Login">
+                <img src="@UserUrl" alt="Login" />
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-outline-light btn-sm" @onclick="Logout" title="Sair">
+                <img src="@SairUrl" alt="Sair" />
+            </button>
+        }
     </div>
 </header>
 
-<nav class="nav-menu">
+@* <nav class="nav-menu">
     <ul class="nav-list">
         <li><NavLink href="" Match="NavLinkMatch.All">Início</NavLink></li>
         <li><NavLink href="produtos">Produtos</NavLink></li>
@@ -37,21 +50,45 @@
         <li><NavLink href="carrinho">Carrinho</NavLink></li>
         <li><NavLink href="favoritos">Favoritos</NavLink></li>
         <li><NavLink href="encomendas">Encomendas</NavLink></li>
-        <li><NavLink href="registo">Registo</NavLink></li>
+
+        @if (!isLoggedIn)
+        {
+            <li><NavLink href="registo">Registo</NavLink></li>
+            <li><NavLink href="login">Login</NavLink></li>
+        }
     </ul>
-</nav>
+</nav> *@
 
 @code {
-    // IMPORTANTE: imagens que estão em RCLComum/wwwroot devem ser acedidas assim:
-    private const string BaseContent = "_content/RCLComum/images";
+    private bool isLoggedIn;
 
-    private string LogoUrl => $"{BaseContent}/logo.png";
+    private const string BaseContent = "_content/RCLComum/images";
+    private string SairUrl => $"{BaseContent}/exit.png";
+    private string LogoUrl => $"{BaseContent}/Mymedia.png";
     private string CartUrl => $"{BaseContent}/cart.png";
+    private string PesqUrl => $"{BaseContent}/pesquisaricon50x50.png";
     private string FavUrl => $"{BaseContent}/heart.png";
-    private string UserUrl => $"{BaseContent}/user.png";
-    private string ProdUrl => $"{BaseContent}/user.png";
-    private string EncUrl => $"{BaseContent}/user.png";
+    private string EncUrl => $"{BaseContent}/icoementrega.png";
+    private string UserUrl => $"{BaseContent}/headicon.png";
     private string RegUrl => $"{BaseContent}/register.png";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        // Só aqui é seguro usar localStorage (JS interop) por causa do prerender
+        try
+        {
+            var token = await TokenSvc.GetTokenAsync();
+            isLoggedIn = !string.IsNullOrWhiteSpace(token);
+            StateHasChanged();
+        }
+        catch
+        {
+            // se falhar por alguma razão, assume "não logado"
+            isLoggedIn = false;
+        }
+    }
 
     private void GoHome() => Nav.NavigateTo("/");
     private void GoCarrinho() => Nav.NavigateTo("/carrinho");
@@ -60,5 +97,11 @@
     private void GoProdutos() => Nav.NavigateTo("/produtos");
     private void GoEncomendas() => Nav.NavigateTo("/encomendas");
     private void GoRegisto() => Nav.NavigateTo("/registo");
-    
+
+    private async Task Logout()
+    {
+        await TokenSvc.RemoveTokenAsync();
+        isLoggedIn = false;
+        Nav.NavigateTo("/", forceLoad: true); // forceLoad ajuda a “limpar” estado
+    }
 }
