@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RESTfulAPI.Entities;
+using MyMedia.Domain;              // <-- ApplicationDbContext aqui
+using MyMedia.Domain.Entities;     // <-- Encomenda/Produto/etc aqui
 
 namespace RESTfulAPI.Repositories
 {
@@ -12,13 +13,13 @@ namespace RESTfulAPI.Repositories
             await _context.Encomendas
                 .Where(e => e.ClienteId == clienteId)
                 .Include(e => e.DetalhesEncomenda)
-                .ThenInclude(d => d.Produto)
+                    .ThenInclude(d => d.Produto)
                 .ToListAsync();
 
         public async Task<Encomenda?> GetByIdAsync(int id) =>
             await _context.Encomendas
                 .Include(e => e.DetalhesEncomenda)
-                .ThenInclude(d => d.Produto)
+                    .ThenInclude(d => d.Produto)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
         public async Task AddAsync(Encomenda encomenda)

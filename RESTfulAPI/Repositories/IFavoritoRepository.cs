@@ -1,5 +1,4 @@
-﻿using RESTfulAPI.Entities;
-
+﻿using MyMedia.Domain.Entities;
 namespace RESTfulAPI.Repositories
 {
     public interface IFavoritoRepository

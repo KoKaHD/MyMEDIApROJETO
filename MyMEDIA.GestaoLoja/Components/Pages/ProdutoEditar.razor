@@ -1,0 +1,113 @@
+﻿@page "/gestao/produtos/{Id:int}/editar"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrador,Funcionario")]
+@using Microsoft.EntityFrameworkCore
+@using MyMedia.Domain
+@using MyMedia.Domain.Entities
+@inject ApplicationDbContext Db
+@inject NavigationManager Nav
+
+<h3>Editar Produto #@Id</h3>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+@if (!string.IsNullOrWhiteSpace(Success))
+{
+    <div class="alert alert-success">@Success</div>
+}
+
+@if (Model is null)
+{
+    <p>A carregar...</p>
+}
+else
+{
+    <EditForm Model="Model" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Nome</label>
+                <InputText class="form-control" @bind-Value="Model.Nome" />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Stock</label>
+                <InputNumber class="form-control" @bind-Value="Model.EmStock" />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Preço Base</label>
+                <InputNumber class="form-control" @bind-Value="Model.PrecoBase" />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">% Plataforma</label>
+                <InputNumber class="form-control" @bind-Value="Model.PercentagemPlataforma" />
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Preço Final</label>
+                <InputNumber class="form-control" @bind-Value="Model.PrecoFinal" />
+                <div class="form-text">Normalmente calculado na validação.</div>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="form-label">Estado</label>
+                <InputSelect class="form-select" @bind-Value="Model.Estado">
+                    <option value="@EstadoProduto.Pendente">Pendente</option>
+                    <option value="@EstadoProduto.Ativo">Ativo</option>
+                    <option value="@EstadoProduto.Inativo">Inativo</option>
+                </InputSelect>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Detalhe</label>
+                <InputTextArea class="form-control" @bind-Value="Model.Detalhe" rows="3" />
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <button class="btn btn-outline-secondary" type="button" @onclick="Voltar">Voltar</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    Produto? Model;
+    string? Error;
+    string? Success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = await Db.Produtos.FirstOrDefaultAsync(p => p.Id == Id);
+        if (Model is null) Error = "Produto não encontrado.";
+    }
+
+    async Task Guardar()
+    {
+        try
+        {
+            Error = null; Success = null;
+
+            // regra útil: se alteras base/percent, podes recalcular final automaticamente
+            Model!.PrecoFinal = Math.Round(Model.PrecoBase * (1 + (Model.PercentagemPlataforma / 100m)), 2);
+
+            Db.Produtos.Update(Model);
+            await Db.SaveChangesAsync();
+
+            Success = "Alterações guardadas.";
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    void Voltar() => Nav.NavigateTo("/gestao/produtos");
+}

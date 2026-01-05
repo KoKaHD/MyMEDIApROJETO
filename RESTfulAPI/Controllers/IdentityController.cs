@@ -2,12 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using RESTfulAPI.Data;
+using MyMedia.Domain;
 using RESTfulAPI.Data.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
 namespace RESTfulAPI.Controllers;
 
 [ApiController]

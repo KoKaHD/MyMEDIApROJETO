@@ -1,0 +1,132 @@
+﻿@page "/gestao/produtos/criar"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles="Administrador,Funcionario")]
+@using Microsoft.EntityFrameworkCore
+@using MyMedia.Domain
+@using MyMedia.Domain.Entities
+@inject ApplicationDbContext Db
+@inject NavigationManager Nav
+@inject MyMEDIA.GestaoLoja.Services.ProdutoBackofficeService Service
+<h3>Criar Produto</h3>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+
+<EditForm Model="Model" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label">Nome</label>
+            <InputText class="form-control" @bind-Value="Model.Nome" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Preço Base</label>
+            <InputNumber class="form-control" @bind-Value="Model.PrecoBase" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">% Plataforma</label>
+            <InputNumber class="form-control" @bind-Value="Model.PercentagemPlataforma" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Stock</label>
+            <InputNumber class="form-control" @bind-Value="Model.EmStock" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Categoria</label>
+            <InputSelect class="form-select" @bind-Value="Model.CategoriaId">
+                @foreach (var c in Categorias)
+                {
+                    <option value="@c.Id">@c.Nome</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Modo Entrega</label>
+            <InputSelect class="form-select" @bind-Value="Model.ModoEntregaId">
+                @foreach (var m in ModosEntrega)
+                {
+                    <option value="@m.Id">@m.Nome</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Estado</label>
+            <InputSelect class="form-select" @bind-Value="Model.Estado">
+                <option value="@EstadoProduto.Ativo">Ativo</option>
+                <option value="@EstadoProduto.Pendente">Pendente</option>
+                <option value="@EstadoProduto.Inativo">Inativo</option>
+            </InputSelect>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Tipo</label>
+            <div class="form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="Model.ParaVenda" />
+                <label class="form-check-label">Para venda</label>
+            </div>
+            <div class="form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="Model.ParaListagem" />
+                <label class="form-check-label">Para listagem</label>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Detalhe</label>
+            <InputTextArea class="form-control" rows="3" @bind-Value="Model.Detalhe" />
+        </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Criar</button>
+        <button class="btn btn-outline-secondary" type="button" @onclick='() => Nav.NavigateTo("/gestao/produtos")'>Voltar</button>
+    </div>
+</EditForm>
+
+@code {
+    Produto Model = new()
+    {
+        Estado = EstadoProduto.Ativo,
+        ParaVenda = true,
+        ParaListagem = true
+    };
+
+    List<Categoria> Categorias = new();
+    List<ModoEntrega> ModosEntrega = new();
+    string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model.FornecedorId = await Service.GetFornecedorInternoIdAsync();
+        Categorias = await Db.Categorias.AsNoTracking().OrderBy(c => c.Nome).ToListAsync();
+        ModosEntrega = await Db.ModosEntrega.AsNoTracking().OrderBy(m => m.Nome).ToListAsync();
+
+        if (Categorias.Count > 0) Model.CategoriaId = Categorias[0].Id;
+        if (ModosEntrega.Count > 0) Model.ModoEntregaId = ModosEntrega[0].Id;
+
+        // atenção: FornecedorId é obrigatório no teu modelo.
+        // Para criação pelo backoffice, sugiro criar um "FornecedorInterno" (user) ou permitir null.
+        // Se for obrigatório, diz-me como queres tratar e eu ajusto.
+    }
+
+    async Task Guardar()
+    {
+        try
+        {
+            if (!Model.ParaVenda && !Model.ParaListagem)
+                throw new InvalidOperationException("Tem de ser para Venda e/ou para Listagem.");
+
+            await Service.CreateAsync(Model);
+            Nav.NavigateTo("/gestao/produtos");
+        }
+        catch (Exception ex) { Error = ex.Message; }
+    }
+}

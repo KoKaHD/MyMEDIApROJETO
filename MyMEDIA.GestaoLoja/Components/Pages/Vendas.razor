@@ -1,0 +1,297 @@
+﻿@page "/gestao/vendas"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrador,Funcionario")]
+@using MyMedia.Domain.Entities
+@inject MyMEDIA.GestaoLoja.Services.VendasBackofficeService Service
+
+<h3>Gestão de Vendas</h3>
+
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-4">
+        <select class="form-select" @bind="Estado">
+            <option value="">-- Estado Encomenda --</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Confirmada">Confirmada</option>
+            <option value="Rejeitada">Rejeitada</option>
+            <option value="Expedida">Expedida</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <select class="form-select" @bind="Pagamento">
+            <option value="">-- Estado Pagamento --</option>
+            <option value="Pendente">Pendente</option>
+            <option value="Pago">Pago</option>
+            <option value="Rejeitado">Rejeitado</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-4 d-grid">
+        <button class="btn btn-primary" @onclick="Reload">Filtrar</button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+@if (!string.IsNullOrWhiteSpace(Success))
+{
+    <div class="alert alert-success">@Success</div>
+}
+
+<table class="table table-striped table-sm align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Pagamento</th>
+            <th>Expedição</th>
+            <th style="width: 420px;">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Items)
+        {
+            <tr>
+                <td>@e.Id</td>
+                <td>@e.DataEncomenda.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(e.Cliente?.Email ?? e.ClienteId)</td>
+                <td>@e.PrecoTotal.ToString("0.00")</td>
+                <td>@e.Estado</td>
+                <td>@e.EstadoPagamento</td>
+                <td>@(e.DataExpedicao?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => VerDetalhes(e)">
+                        Detalhes
+                    </button>
+
+                    @if (e.Estado == "Pendente")
+                    {
+                        <button class="btn btn-sm btn-success me-1" @onclick="() => AbrirConfirmar(e)">Confirmar</button>
+                        <button class="btn btn-sm btn-danger me-1" @onclick="() => AbrirRejeitar(e)">Rejeitar</button>
+                    }
+
+                    @if (e.Estado != "Rejeitada" && e.EstadoPagamento != "Pago")
+                    {
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => AbrirMarcarPago(e)">Marcar Pago</button>
+                    }
+
+                    @if (e.Estado == "Confirmada" && e.EstadoPagamento == "Pago")
+                    {
+                        <button class="btn btn-sm btn-primary" @onclick="() => AbrirExpedir(e)">Expedir</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <div>Total: @Total</div>
+
+    <div class="btn-group">
+        <button class="btn btn-outline-secondary" disabled="@(!CanPrev)" @onclick="Prev">Anterior</button>
+        <button class="btn btn-outline-secondary" disabled="@(!CanNext)" @onclick="Next">Seguinte</button>
+    </div>
+</div>
+
+@* Modal detalhes *@
+@if (ShowDetalhes && EncomendaSel is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Encomenda #@EncomendaSel.Id - Detalhes</h5>
+                    <button type="button" class="btn-close" @onclick="FecharDetalhes"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1"><strong>Cliente:</strong> @(EncomendaSel.Cliente?.Email ?? EncomendaSel.ClienteId)</p>
+                    <p class="mb-1"><strong>Estado:</strong> @EncomendaSel.Estado</p>
+                    <p class="mb-3"><strong>Pagamento:</strong> @EncomendaSel.EstadoPagamento</p>
+
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd</th>
+                                <th>Unitário</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in EncomendaSel.DetalhesEncomenda)
+                            {
+                                <tr>
+                                    <td>@(d.Produto?.Nome ?? $"Produto {d.ProdutoId}")</td>
+                                    <td>@d.Quantidade</td>
+                                    <td>@d.PrecoUnitario.ToString("0.00")</td>
+                                    <td>@( (d.PrecoUnitario * d.Quantidade).ToString("0.00") )</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="text-end">
+                        <strong>Total: @EncomendaSel.PrecoTotal.ToString("0.00")</strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="FecharDetalhes">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Modal confirmação genérico *@
+@if (ShowConfirm && EncomendaSel is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ConfirmTitle</h5>
+                    <button type="button" class="btn-close" @onclick="FecharConfirm"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">@ConfirmMessage</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="FecharConfirm">Cancelar</button>
+                    <button class="btn @ConfirmBtnClass" @onclick="ExecutarConfirm">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // filtros
+    string? Estado;
+    string? Pagamento;
+
+    // paginação
+    int Page = 1;
+    const int PageSize = 10;
+    int Total;
+    bool CanPrev => Page > 1;
+    bool CanNext => (Page * PageSize) < Total;
+
+    List<Encomenda> Items = new();
+
+    string? Error;
+    string? Success;
+
+    // Detalhes
+    bool ShowDetalhes;
+    Encomenda? EncomendaSel;
+
+    // Confirmações (Confirmar/Rejeitar/Pagar/Expedir)
+    bool ShowConfirm;
+    string ConfirmTitle = "";
+    string ConfirmMessage = "";
+    string ConfirmBtnClass = "btn-primary";
+    Func<Task>? ConfirmAction;
+
+    protected override async Task OnInitializedAsync()
+        => await Reload();
+
+    async Task Reload()
+    {
+        Error = null; Success = null;
+        var (items, total) = await Service.SearchAsync(Estado, Pagamento, Page, PageSize);
+        Items = items;
+        Total = total;
+    }
+
+    async Task Prev() { if (!CanPrev) return; Page--; await Reload(); }
+    async Task Next() { if (!CanNext) return; Page++; await Reload(); }
+
+    void VerDetalhes(Encomenda e) { EncomendaSel = e; ShowDetalhes = true; }
+    void FecharDetalhes() { ShowDetalhes = false; EncomendaSel = null; }
+
+    void FecharConfirm()
+    {
+        ShowConfirm = false;
+        ConfirmAction = null;
+    }
+
+    async Task ExecutarConfirm()
+    {
+        try
+        {
+            if (ConfirmAction is null) return;
+            Error = null; Success = null;
+
+            await ConfirmAction();
+            FecharConfirm();
+            await Reload();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    void AbrirConfirmar(Encomenda e)
+    {
+        EncomendaSel = e;
+        ConfirmTitle = "Confirmar Venda";
+        ConfirmMessage = $"Confirmar a encomenda #{e.Id}?";
+        ConfirmBtnClass = "btn-success";
+        ConfirmAction = async () =>
+        {
+            await Service.ConfirmarAsync(e.Id);
+            Success = $"Encomenda #{e.Id} confirmada.";
+        };
+        ShowConfirm = true;
+    }
+
+    void AbrirRejeitar(Encomenda e)
+    {
+        EncomendaSel = e;
+        ConfirmTitle = "Rejeitar Venda";
+        ConfirmMessage = $"Rejeitar a encomenda #{e.Id}?";
+        ConfirmBtnClass = "btn-danger";
+        ConfirmAction = async () =>
+        {
+            await Service.RejeitarAsync(e.Id);
+            Success = $"Encomenda #{e.Id} rejeitada.";
+        };
+        ShowConfirm = true;
+    }
+
+    void AbrirMarcarPago(Encomenda e)
+    {
+        EncomendaSel = e;
+        ConfirmTitle = "Pagamento (Simulado)";
+        ConfirmMessage = $"Marcar a encomenda #{e.Id} como paga?";
+        ConfirmBtnClass = "btn-warning";
+        ConfirmAction = async () =>
+        {
+            await Service.MarcarPagoAsync(e.Id);
+            Success = $"Encomenda #{e.Id} marcada como paga.";
+        };
+        ShowConfirm = true;
+    }
+
+    void AbrirExpedir(Encomenda e)
+    {
+        EncomendaSel = e;
+        ConfirmTitle = "Expedir Encomenda";
+        ConfirmMessage = $"Expedir a encomenda #{e.Id}? (vai atualizar o stock)";
+        ConfirmBtnClass = "btn-primary";
+        ConfirmAction = async () =>
+        {
+            await Service.ExpedirAsync(e.Id);
+            Success = $"Encomenda #{e.Id} expedida e stock atualizado.";
+        };
+        ShowConfirm = true;
+    }
+}

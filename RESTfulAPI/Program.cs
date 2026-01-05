@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using RESTfulAPI.Data;
 using RESTfulAPI.Repositories;
 using System.Text;
-
+using MyMedia.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,8 +74,8 @@ var connection = builder.Configuration.GetConnectionString("DefaultConnection") 
         throw new InvalidOperationException("Connection string 'DefaultConnection' not found");
 
 //Injecao de Dependencias
-builder.Services.AddDbContext<ApplicationDbContext>(option =>
-                                            option.UseSqlServer(connection));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connection, b => b.MigrationsAssembly("RESTfulAPI")));
 
 
 // Configuracao de politicas de autorizacao

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RESTfulAPI.Entities;
-
+using MyMedia.Domain;
+using MyMedia.Domain.Entities;
 namespace RESTfulAPI.Repositories
 {
     public class CategoriaRepository : ICategoriaRepository

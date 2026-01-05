@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RESTfulAPI.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
+using MyMedia.Domain.Entities;
 using RESTfulAPI.Repositories;
-
 namespace RESTfulAPI.Controllers
 {
     [Route("api/[controller]")]

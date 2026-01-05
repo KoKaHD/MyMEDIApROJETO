@@ -1,5 +1,5 @@
-﻿using RESTfulAPI.Entities;
-
+﻿using MyMedia.Domain.Entities;
+using MyMedia.Domain;
 namespace RESTfulAPI.Repositories
 {
     public interface IEncomendaRepository

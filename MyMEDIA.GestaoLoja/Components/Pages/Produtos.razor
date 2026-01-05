@@ -1,0 +1,441 @@
+﻿@page "/gestao/produtos"
+@using MyMedia.Domain.Entities
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrador,Funcionario")]
+@inject MyMEDIA.GestaoLoja.Services.ProdutoBackofficeService Service
+
+<h3>Gestão de Produtos</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-primary" href="/gestao/produtos/criar">Criar Produto</a>
+</div>
+
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-3">
+        <input class="form-control" placeholder="Pesquisar (nome/título)..."
+               @bind="Q" @bind:event="oninput" />
+    </div>
+
+    <div class="col-12 col-md-2">
+        <select class="form-select" @bind="CategoriaId">
+            <option value="">-- Categoria --</option>
+            @foreach (var c in Categorias)
+            {
+                <option value="@c.Id">@c.Nome</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+        <select class="form-select" @bind="ModoEntregaId">
+            <option value="">-- Modo Entrega --</option>
+            @foreach (var m in ModosEntrega)
+            {
+                <option value="@m.Id">@m.Nome</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+        <select class="form-select" @bind="Estado">
+            <option value="">-- Estado --</option>
+            <option value="@EstadoProduto.Pendente">Pendente</option>
+            <option value="@EstadoProduto.Ativo">Ativo</option>
+            <option value="@EstadoProduto.Inativo">Inativo</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-1">
+        <select class="form-select" @bind="Tipo">
+            <option value="Ambos">Ambos</option>
+            <option value="Venda">Venda</option>
+            <option value="Listagem">Listagem</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+        <select class="form-select" @bind="OrderBy">
+            <option value="id_desc">Mais recentes</option>
+            <option value="nome_asc">Nome (A-Z)</option>
+            <option value="preco_asc">Preço final ↑</option>
+            <option value="preco_desc">Preço final ↓</option>
+            <option value="stock_desc">Stock ↓</option>
+        </select>
+    </div>
+
+    <div class="col-12 col-md-2 d-grid">
+        <button class="btn btn-primary" @onclick="Filtrar">Filtrar</button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+@if (!string.IsNullOrWhiteSpace(Success))
+{
+    <div class="alert alert-success">@Success</div>
+}
+
+<table class="table table-striped table-sm align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Modo</th>
+            <th>Tipo</th>
+            <th>Base</th>
+            <th>%</th>
+            <th>Final</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th style="width: 290px;">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Items)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Nome</td>
+                <td>@p.Categoria?.Nome</td>
+                <td>@p.ModoEntrega?.Nome</td>
+                <td>
+                    @(p.ParaVenda ? "Venda" : "")@(p.ParaVenda && p.ParaListagem ? " + " : "")@(p.ParaListagem ? "Listagem" : "")
+                </td>
+
+                <td>@p.PrecoBase.ToString("0.00")</td>
+
+                <td style="max-width:120px;">
+                    @if (p.Estado == EstadoProduto.Pendente)
+                    {
+                        <input class="form-control form-control-sm"
+                               type="number" step="0.01" min="0" max="100"
+                               style="max-width:110px;"
+                               @bind="Percentagens[p.Id]"
+                               @bind:event="oninput" />
+                    }
+                    else
+                    {
+                        @p.PercentagemPlataforma.ToString("0.##")
+                    }
+                </td>
+
+                <td>@p.PrecoFinal.ToString("0.00")</td>
+                <td>@p.EmStock</td>
+                <td>@p.Estado</td>
+
+                <td>
+                    <a class="btn btn-sm btn-outline-secondary me-1" href="/gestao/produtos/@p.Id/editar">
+                        Editar
+                    </a>
+
+                    @if (p.Estado == EstadoProduto.Pendente)
+                    {
+                        <button class="btn btn-sm btn-success me-1" @onclick="() => AbrirValidacao(p)">
+                            Validar
+                        </button>
+                    }
+                    else if (p.Estado == EstadoProduto.Ativo)
+                    {
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => MudarEstado(p.Id, EstadoProduto.Inativo)">
+                            Inativar
+                        </button>
+                    }
+                    else if (p.Estado == EstadoProduto.Inativo)
+                    {
+                        <button class="btn btn-sm btn-success me-1" @onclick="() => MudarEstado(p.Id, EstadoProduto.Ativo)">
+                            Ativar
+                        </button>
+                    }
+
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => AbrirApagar(p)">
+                        Apagar
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <div>Total: @Total</div>
+
+    <div class="btn-group">
+        <button class="btn btn-outline-secondary" disabled="@(!CanPrev)" @onclick="Prev">Anterior</button>
+        <button class="btn btn-outline-secondary" disabled="@(!CanNext)" @onclick="Next">Seguinte</button>
+    </div>
+</div>
+
+@* Modal Validar *@
+@if (ShowValidarModal && ProdutoParaValidar is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Validar Produto</h5>
+                    <button type="button" class="btn-close" @onclick="FecharValidacao"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        Vais validar/ativar o produto:
+                        <strong>#@ProdutoParaValidar.Id - @ProdutoParaValidar.Nome</strong>
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label">% Plataforma</label>
+                        <input class="form-control"
+                               type="number" step="0.01" min="0" max="100"
+                               @bind="PercentagemModal"
+                               @bind:event="oninput" />
+                        <div class="form-text">0 a 100</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <div class="text-muted">Preço Base</div>
+                                <div><strong>@ProdutoParaValidar.PrecoBase.ToString("0.00")</strong></div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <div class="text-muted">Preço Final (preview)</div>
+                                <div><strong>@PrecoFinalPreview.ToString("0.00")</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-3 mb-0">
+                        Ao confirmar, o produto passa de <strong>Pendente</strong> para <strong>Ativo</strong>.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="FecharValidacao">Cancelar</button>
+                    <button class="btn btn-success" @onclick="ConfirmarValidacao">Confirmar validação</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@* Modal Apagar *@
+@if (ShowApagarModal && ProdutoParaApagar is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Apagar Produto</h5>
+                    <button type="button" class="btn-close" @onclick="FecharApagar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-2">Tens a certeza que queres apagar o produto:</p>
+                    <p class="mb-0"><strong>#@ProdutoParaApagar.Id - @ProdutoParaApagar.Nome</strong></p>
+
+                    <div class="alert alert-danger mt-3 mb-0">
+                        Esta operação é irreversível. Só será possível se não existirem vendas desse produto.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="FecharApagar">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="ConfirmarApagar">Sim, apagar</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // filtros
+    string? Q;
+    int? CategoriaId;
+    int? ModoEntregaId;
+    EstadoProduto? Estado;
+    string Tipo = "Ambos";
+    string OrderBy = "id_desc";
+
+    // paginação
+    int Page = 1;
+    const int PageSize = 10;
+    int Total;
+    bool CanPrev => Page > 1;
+    bool CanNext => (Page * PageSize) < Total;
+
+    List<Categoria> Categorias = new();
+    List<ModoEntrega> ModosEntrega = new();
+    List<Produto> Items = new();
+
+    Dictionary<int, decimal> Percentagens = new();
+
+    string? Error;
+    string? Success;
+
+    // Modal validar
+    bool ShowValidarModal;
+    Produto? ProdutoParaValidar;
+    decimal PercentagemModal;
+
+    decimal PrecoFinalPreview =>
+        ProdutoParaValidar is null
+            ? 0m
+            : Math.Round(ProdutoParaValidar.PrecoBase * (1 + (PercentagemModal / 100m)), 2);
+
+    // Modal apagar
+    bool ShowApagarModal;
+    Produto? ProdutoParaApagar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categorias = await Service.GetCategoriasAsync();
+        ModosEntrega = await Service.GetModosEntregaAsync();
+        await Reload();
+    }
+
+    async Task Filtrar()
+    {
+        Page = 1;
+        await Reload();
+    }
+
+    async Task Reload()
+    {
+        Error = null;
+        Success = null;
+
+        var (items, total) = await Service.SearchAsync(
+            Q, CategoriaId, ModoEntregaId, Estado, Tipo, OrderBy, Page, PageSize);
+
+        Items = items;
+        Total = total;
+
+        foreach (var p in Items.Where(x => x.Estado == EstadoProduto.Pendente))
+        {
+            if (!Percentagens.ContainsKey(p.Id))
+                Percentagens[p.Id] = p.PercentagemPlataforma;
+        }
+    }
+
+    async Task Prev()
+    {
+        if (!CanPrev) return;
+        Page--;
+        await Reload();
+    }
+
+    async Task Next()
+    {
+        if (!CanNext) return;
+        Page++;
+        await Reload();
+    }
+
+    void AbrirValidacao(Produto p)
+    {
+        Error = null;
+        Success = null;
+
+        ProdutoParaValidar = p;
+        PercentagemModal = Percentagens.TryGetValue(p.Id, out var v) ? v : p.PercentagemPlataforma;
+        ShowValidarModal = true;
+    }
+
+    void FecharValidacao()
+    {
+        ShowValidarModal = false;
+        ProdutoParaValidar = null;
+    }
+
+    async Task ConfirmarValidacao()
+    {
+        try
+        {
+            if (ProdutoParaValidar is null) return;
+
+            Error = null;
+            Success = null;
+
+            await Service.ValidateAsync(ProdutoParaValidar.Id, PercentagemModal);
+            Percentagens[ProdutoParaValidar.Id] = PercentagemModal;
+
+            Success = $"Produto #{ProdutoParaValidar.Id} validado/ativado.";
+            FecharValidacao();
+            await Reload();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    void AbrirApagar(Produto p)
+    {
+        Error = null;
+        Success = null;
+
+        // não deixar dois modais abertos
+        ShowValidarModal = false;
+        ProdutoParaValidar = null;
+
+        ProdutoParaApagar = p;
+        ShowApagarModal = true;
+    }
+
+    void FecharApagar()
+    {
+        ShowApagarModal = false;
+        ProdutoParaApagar = null;
+    }
+
+    async Task ConfirmarApagar()
+    {
+        try
+        {
+            if (ProdutoParaApagar is null) return;
+
+            Error = null;
+            Success = null;
+
+            await Service.DeleteAsync(ProdutoParaApagar.Id);
+
+            Success = $"Produto #{ProdutoParaApagar.Id} apagado.";
+            FecharApagar();
+            await Reload();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    async Task MudarEstado(int id, EstadoProduto novo)
+    {
+        try
+        {
+            Error = null;
+            Success = null;
+
+            await Service.SetEstadoAsync(id, novo);
+
+            Success = $"Estado do produto #{id} atualizado para {novo}.";
+            await Reload();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+}

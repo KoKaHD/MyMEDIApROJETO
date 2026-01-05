@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using MyMedia.Domain;
 
 #nullable disable
 
@@ -154,7 +155,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Data.ApplicationUser", b =>
+            modelBuilder.Entity("MyMedia.Domain.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -237,7 +238,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Carrinho", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Carrinho", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,7 +265,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("Carrinhos");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Categoria", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -281,7 +282,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("Categorias");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.DetalheEncomenda", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.DetalheEncomenda", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -293,6 +294,7 @@ namespace RESTfulAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("PrecoUnitario")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProdutoId")
@@ -310,7 +312,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("DetalhesEncomenda");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Encomenda", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Encomenda", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -325,11 +327,22 @@ namespace RESTfulAPI.Migrations
                     b.Property<DateTime>("DataEncomenda")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DataExpedicao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataPagamento")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EstadoPagamento")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("PrecoTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -339,7 +352,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("Encomendas");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Favorito", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Favorito", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -363,7 +376,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("Favoritos");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.ModoEntrega", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.ModoEntrega", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -380,7 +393,7 @@ namespace RESTfulAPI.Migrations
                     b.ToTable("ModosEntrega");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Produto", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Produto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -395,11 +408,15 @@ namespace RESTfulAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Disponivel")
-                        .HasColumnType("bit");
+                    b.Property<int>("EmStock")
+                        .HasColumnType("int");
 
-                    b.Property<decimal>("EmStock")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Pendente");
 
                     b.Property<string>("FornecedorId")
                         .IsRequired()
@@ -422,7 +439,22 @@ namespace RESTfulAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Preco")
+                    b.Property<bool>("ParaListagem")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ParaVenda")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("PercentagemPlataforma")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("PrecoBase")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PrecoFinal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("Promocao")
@@ -457,7 +489,7 @@ namespace RESTfulAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", null)
+                    b.HasOne("MyMedia.Domain.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -466,7 +498,7 @@ namespace RESTfulAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", null)
+                    b.HasOne("MyMedia.Domain.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -481,7 +513,7 @@ namespace RESTfulAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", null)
+                    b.HasOne("MyMedia.Domain.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -490,22 +522,22 @@ namespace RESTfulAPI.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", null)
+                    b.HasOne("MyMedia.Domain.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Carrinho", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Carrinho", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", "Cliente")
+                    b.HasOne("MyMedia.Domain.ApplicationUser", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Entities.Produto", "Produto")
+                    b.HasOne("MyMedia.Domain.Entities.Produto", "Produto")
                         .WithMany("Carrinhos")
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -516,15 +548,15 @@ namespace RESTfulAPI.Migrations
                     b.Navigation("Produto");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.DetalheEncomenda", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.DetalheEncomenda", b =>
                 {
-                    b.HasOne("RESTfulAPI.Entities.Encomenda", "Encomenda")
+                    b.HasOne("MyMedia.Domain.Entities.Encomenda", "Encomenda")
                         .WithMany("DetalhesEncomenda")
                         .HasForeignKey("EncomendaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Entities.Produto", "Produto")
+                    b.HasOne("MyMedia.Domain.Entities.Produto", "Produto")
                         .WithMany("DetalhesEncomenda")
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -535,9 +567,9 @@ namespace RESTfulAPI.Migrations
                     b.Navigation("Produto");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Encomenda", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Encomenda", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", "Cliente")
+                    b.HasOne("MyMedia.Domain.ApplicationUser", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -546,15 +578,15 @@ namespace RESTfulAPI.Migrations
                     b.Navigation("Cliente");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Favorito", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Favorito", b =>
                 {
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", "Cliente")
+                    b.HasOne("MyMedia.Domain.ApplicationUser", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Entities.Produto", "Produto")
+                    b.HasOne("MyMedia.Domain.Entities.Produto", "Produto")
                         .WithMany("Favoritos")
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -565,21 +597,21 @@ namespace RESTfulAPI.Migrations
                     b.Navigation("Produto");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Produto", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Produto", b =>
                 {
-                    b.HasOne("RESTfulAPI.Entities.Categoria", "Categoria")
+                    b.HasOne("MyMedia.Domain.Entities.Categoria", "Categoria")
                         .WithMany("Produtos")
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Data.ApplicationUser", "Fornecedor")
+                    b.HasOne("MyMedia.Domain.ApplicationUser", "Fornecedor")
                         .WithMany()
                         .HasForeignKey("FornecedorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("RESTfulAPI.Entities.ModoEntrega", "ModoEntrega")
+                    b.HasOne("MyMedia.Domain.Entities.ModoEntrega", "ModoEntrega")
                         .WithMany("Produtos")
                         .HasForeignKey("ModoEntregaId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -592,22 +624,22 @@ namespace RESTfulAPI.Migrations
                     b.Navigation("ModoEntrega");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Categoria", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Produtos");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Encomenda", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Encomenda", b =>
                 {
                     b.Navigation("DetalhesEncomenda");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.ModoEntrega", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.ModoEntrega", b =>
                 {
                     b.Navigation("Produtos");
                 });
 
-            modelBuilder.Entity("RESTfulAPI.Entities.Produto", b =>
+            modelBuilder.Entity("MyMedia.Domain.Entities.Produto", b =>
                 {
                     b.Navigation("Carrinhos");
 
